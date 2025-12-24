@@ -116,26 +116,30 @@
           (progn
             (insert "━━━ 출근 추천: 06시대 ━━━\n")
             (insert "(08시 대비 1/9 혼잡도)\n\n")
-            (insert "시간 | 승차\n")
-            (insert "─────┼─────\n")
+            (insert "시간│승차(명)│상태\n")
+            (insert "────┼────────┼────\n")
             (dolist (d (alist-get 'morning anzagaza-data))
-              (insert (format " %02d시 | %4d %s%s\n"
-                              (car d) (cdr d)
-                              (if (< (cdr d) 500) "⭐" "🔴")
-                              (if (= (car d) hour) " ← 현재" "")))))
+              (let* ((status (if (< (cdr d) 500) "⭐" "🔴"))
+                     (now (if (= (car d) hour) "←" "")))
+                (insert (format "%02d시│%8d│%s%s\n"
+                                (car d) (cdr d) status now)))))
         (progn
           (insert "━━━ 퇴근 추천: 20시 이후 ━━━\n")
           (insert "(18시 대비 60% 혼잡도)\n\n")
-          (insert "시간 | 하차\n")
-          (insert "─────┼─────\n")
+          (insert "시간│하차(명)│상태\n")
+          (insert "────┼────────┼────\n")
           (dolist (d (alist-get 'evening anzagaza-data))
-            (insert (format " %02d시 | %4d %s%s\n"
-                            (car d) (cdr d)
-                            (if (< (cdr d) 600) "⭐" "🔴")
-                            (if (= (car d) hour) " ← 현재" ""))))))
+            (let* ((status (if (< (cdr d) 600) "⭐" "🔴"))
+                   (now (if (= (car d) hour) "←" "")))
+              (insert (format "%02d시│%8d│%s%s\n"
+                              (car d) (cdr d) status now))))))
       (insert "\n[r] 새로고침  [q] 닫기")
-      (local-set-key "r" #'anzagaza)
-      (local-set-key "q" #'quit-window))
+      (if (bound-and-true-p evil-mode)
+          (progn
+            (evil-local-set-key 'normal "r" #'anzagaza)
+            (evil-local-set-key 'normal "q" #'quit-window))
+        (local-set-key "r" #'anzagaza)
+        (local-set-key "q" #'quit-window)))
     (pop-to-buffer buf)))
 
 (provide 'anzagaza)
