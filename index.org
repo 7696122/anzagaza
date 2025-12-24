@@ -54,4 +54,5 @@
 
 * 웹 서비스
 - 실행: =python3 server.py=
-- 접속: http://127.0.0.1:8080
+- 로컬: http://127.0.0.1:8080
+- 배포: https://web-production-97f9d.up.railway.app/
