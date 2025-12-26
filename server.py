@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """앉아가자 - 버스 한적한 시간대 추천 웹서비스"""
 from http.server import HTTPServer, SimpleHTTPRequestHandler
+import json
+import urllib.parse
+from seoul_api import get_bus_arrival_info, get_bus_position
 
 HTML = """<!DOCTYPE html>
 <html lang="ko">
@@ -28,6 +31,12 @@ HTML = """<!DOCTYPE html>
     <div class="recommend">
         <strong>⭐ 출근: 06시대</strong> (08시 대비 1/9)<br>
         <strong>⭐ 퇴근: 20시 이후</strong> (18시 대비 60%)
+    </div>
+    
+    <div class="card">
+        <h3>🚌 실시간 버스 정보</h3>
+        <div id="busInfo">로딩 중...</div>
+        <button onclick="refreshBus()">새로고침</button>
     </div>
     
     <div class="card">
@@ -64,6 +73,39 @@ HTML = """<!DOCTYPE html>
         const opts = { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } };
         new Chart(document.getElementById('morningChart'), { type: 'bar', data: morning, options: opts });
         new Chart(document.getElementById('eveningChart'), { type: 'bar', data: evening, options: opts });
+        
+        // 실시간 버스 정보
+        async function refreshBus() {
+            document.getElementById('busInfo').innerHTML = '로딩 중...';
+            try {
+                const response = await fetch('/api/bus');
+                const data = await response.json();
+                document.getElementById('busInfo').innerHTML = formatBusInfo(data);
+            } catch (e) {
+                document.getElementById('busInfo').innerHTML = '오류: ' + e.message;
+            }
+        }
+        
+        function formatBusInfo(data) {
+            if (data.error) return '❌ ' + data.error;
+            if (!data.buses) return '📍 버스 정보 없음';
+            
+            let html = '';
+            data.buses.forEach(bus => {
+                const congestionIcon = ['🟢', '🟡', '🟠', '🔴', '⚫'][bus.congestion1] || '❓';
+                html += `
+                    <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; margin: 8px 0;">
+                        <strong>${bus.route}번</strong> → ${bus.direction}<br>
+                        🚌 ${bus.arrival1} ${congestionIcon}<br>
+                        🚌 ${bus.arrival2}
+                    </div>
+                `;
+            });
+            return html;
+        }
+        
+        // 페이지 로드시 버스 정보 가져오기
+        refreshBus();
     </script>
 </body>
 </html>
@@ -71,10 +113,17 @@ HTML = """<!DOCTYPE html>
 
 class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
-        self.send_response(200)
-        self.send_header("Content-type", "text/html; charset=utf-8")
-        self.end_headers()
-        self.wfile.write(HTML.encode())
+        if self.path == '/api/bus':
+            self.send_response(200)
+            self.send_header("Content-type", "application/json; charset=utf-8")
+            self.end_headers()
+            data = get_bus_arrival_info()
+            self.wfile.write(json.dumps(data, ensure_ascii=False).encode())
+        else:
+            self.send_response(200)
+            self.send_header("Content-type", "text/html; charset=utf-8")
+            self.end_headers()
+            self.wfile.write(HTML.encode())
 
 if __name__ == "__main__":
     import os
