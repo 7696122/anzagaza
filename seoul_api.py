@@ -5,7 +5,13 @@ import requests
 from pathlib import Path
 
 def get_api_key():
-    """~/.authinfo에서 data.go.kr API 키 읽기"""
+    """환경변수 또는 ~/.authinfo에서 data.go.kr API 키 읽기"""
+    # 환경변수 우선 확인 (배포용)
+    api_key = os.environ.get('DATA_GO_KR_API_KEY')
+    if api_key:
+        return api_key
+    
+    # ~/.authinfo에서 읽기 (로컬용)
     authinfo = Path.home() / ".authinfo"
     if not authinfo.exists():
         return None
