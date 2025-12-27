@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 from datetime import datetime
 from seoul_api import get_bus_arrival_info
+from weather_api import get_weather_data
 
 class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
@@ -21,6 +22,8 @@ class Handler(SimpleHTTPRequestHandler):
                 self.send_error(404)
         elif self.path == '/api/bus':
             self.serve_json(get_bus_arrival_info())
+        elif self.path == '/api/weather':
+            self.serve_json(get_weather_data())
         elif self.path == '/api/weekday':
             self.serve_json(self.get_weekday_info())
         else:

@@ -84,6 +84,36 @@ new Chart(document.getElementById('morningChart400'), { type: 'bar', data: morni
 new Chart(document.getElementById('eveningChart421'), { type: 'bar', data: evening421, options: opts });
 new Chart(document.getElementById('eveningChart400'), { type: 'bar', data: evening400, options: opts });
 
+// 날씨 정보
+async function refreshWeather() {
+    document.getElementById('weatherInfo').innerHTML = '로딩 중...';
+    try {
+        const response = await fetch('/api/weather');
+        const data = await response.json();
+        document.getElementById('weatherInfo').innerHTML = formatWeatherInfo(data);
+    } catch (e) {
+        document.getElementById('weatherInfo').innerHTML = '오류: ' + e.message;
+    }
+}
+
+function formatWeatherInfo(data) {
+    if (data.error) return `❌ ${data.error}`;
+    
+    const tempIcon = data.temperature < 0 ? '🥶' : data.temperature > 25 ? '🔥' : '🌡️';
+    const weatherIcon = data.is_raining ? '🌧️' : data.is_snowing ? '❄️' : '☀️';
+    
+    return `
+        <div style="display: grid; gap: 8px;">
+            <div><strong>${weatherIcon} ${data.weather}</strong></div>
+            <div>${tempIcon} 기온: ${data.temperature}°C | 💧 습도: ${data.humidity}%</div>
+            <div style="background: ${data.impact_factor > 1.2 ? '#fef3c7' : '#dcfce7'}; padding: 12px; border-radius: 8px; margin-top: 8px;">
+                <strong>📊 혼잡도 예상: ${data.impact_factor}배</strong><br>
+                ${data.recommendation}
+            </div>
+        </div>
+    `;
+}
+
 // 실시간 버스 정보
 async function refreshBus() {
     document.getElementById('busInfo').innerHTML = '로딩 중...';
@@ -117,8 +147,9 @@ function formatBusInfo(data) {
     return html;
 }
 
-// 페이지 로드시 버스 정보 가져오기
+// 페이지 로드시 정보 가져오기
 refreshBus();
+refreshWeather();
 
 // 현재 요일 표시
 const days = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];

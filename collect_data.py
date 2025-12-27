@@ -4,6 +4,7 @@ import json
 import time
 from datetime import datetime
 from seoul_api import get_bus_arrival_info
+from weather_api import get_weather_data
 from pathlib import Path
 
 def collect_realtime_data():
@@ -14,6 +15,7 @@ def collect_realtime_data():
     weekday_name = ['월', '화', '수', '목', '금', '토', '일'][weekday]
     
     data = get_bus_arrival_info("03278")
+    weather = get_weather_data()
     
     if "buses" in data:
         result = {
@@ -23,6 +25,7 @@ def collect_realtime_data():
             "weekday": weekday,
             "weekday_name": weekday_name,
             "is_weekend": weekday >= 5,
+            "weather": weather,
             "buses": data["buses"]
         }
         
@@ -31,6 +34,9 @@ def collect_realtime_data():
             f.write(json.dumps(result, ensure_ascii=False) + "\n")
         
         print(f"[{timestamp} {weekday_name}] 수집 완료")
+        if "weather" in result and not result["weather"].get("error"):
+            weather_info = result["weather"]
+            print(f"  날씨: {weather_info['weather']} {weather_info['temperature']}°C (영향도: {weather_info['impact_factor']}배)")
         for bus in data["buses"]:
             print(f"  {bus['route']}번: {bus['arrival1']}")
     else:
