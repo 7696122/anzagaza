@@ -81,10 +81,10 @@ function formatMainRecommendation(unified) {
     if (unified.best_bus) {
         const bus = unified.best_bus;
         html += `
-            <div style="background: #f0f9ff; padding: 12px; border-radius: 8px; margin-top: 12px;">
+            <div style="background: #1f2937; color: white; padding: 12px; border-radius: 8px; margin-top: 12px; border: 2px solid #22c55e;">
                 <strong>🚌 추천: ${bus.route}번</strong><br>
                 ${bus.arrival} | ${bus.passengers}명 탑승<br>
-                <small>${bus.comfort}</small>
+                <small style="color: #d1fae5;">${bus.comfort}</small>
             </div>
         `;
     }
