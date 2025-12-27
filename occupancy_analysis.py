@@ -91,20 +91,26 @@ def estimate_passenger_count(congestion_level, capacity, route=None):
     
     if congestion_level == 1:  # 여유
         base_passengers = random.randint(15, 25)
-        comfort = "🟢 매우 편안 - 좌석 여유"
     elif congestion_level == 2:  # 보통
         base_passengers = random.randint(30, 45)
-        comfort = "🟡 보통 - 좌석 대부분 차있음"
     elif congestion_level == 3:  # 혼잡
         base_passengers = random.randint(45, 62)
-        comfort = "🟠 혼잡 - 입석 승객 많음"
     else:  # congestion_level == 4, 매우혼잡
         base_passengers = random.randint(62, 70)
-        comfort = "🔴 매우혼잡 - 승차 어려움"
     
     # 노선별, 시간대별 조정 적용
     passengers = int(base_passengers * route_factor * time_factor)
     passengers = min(max(passengers, 5), total_capacity)  # 5명~70명 범위
+    
+    # 최종 승객 수 기반으로 comfort 결정 (일관성 보장)
+    if passengers <= 25:
+        comfort = "🟢 매우 편안 - 좌석 여유"
+    elif passengers <= 40:
+        comfort = "🟡 보통 - 좌석 대부분 차있음"
+    elif passengers <= 55:
+        comfort = "🟠 혼잡 - 입석 승객 많음"
+    else:
+        comfort = "🔴 매우혼잡 - 승차 어려움"
     
     occupancy_rate = round((passengers / total_capacity) * 100, 1)
     

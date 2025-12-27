@@ -332,11 +332,20 @@ function formatBusInfo(data) {
 }
 
 // 페이지 로드시 정보 가져오기
-refreshQuietTimes();
-refreshBus();
-refreshPrediction();
-refreshWeather();
-refreshTraffic();
+function refreshAll() {
+    refreshQuietTimes();
+    refreshBus();
+    refreshPrediction();
+    refreshWeather();
+    refreshTraffic();
+    document.getElementById('lastUpdate').textContent = 
+        '마지막 업데이트: ' + new Date().toLocaleTimeString('ko-KR');
+}
+
+refreshAll();
+
+// 60초마다 자동 새로고침
+setInterval(refreshAll, 60000);
 
 // 현재 요일 표시
 const days = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];

@@ -9,7 +9,7 @@
 </head>
 <body>
     <h1>🚌 앉아가자</h1>
-    <p class="subtitle">421번 보광동주민센터 → 매봉역</p>
+    <p class="subtitle">보광동주민센터 → 매봉역 (400·405·421번)</p>
     
     <div class="recommend">
         <div id="mainRecommendation">로딩 중...</div>
@@ -44,10 +44,13 @@
     <div class="card">
         <h3>📊 시간대별 혼잡도 패턴</h3>
         <canvas id="hourlyPattern"></canvas>
-        <small>녹색: 한적(20명↓) | 노랑: 보통(40명↓) | 주황: 혼잡(60명↓) | 빨강: 매우혼잡</small>
+        <small>녹색: 한적(25명↓) | 노랑: 보통(40명↓) | 주황: 혼잡(55명↓) | 빨강: 매우혼잡</small>
     </div>
     
-    <p class="footer">데이터: 서울시 버스 승하차 정보 (2024.11)</p>
+    <p class="footer">
+        <span id="lastUpdate">마지막 업데이트: -</span><br>
+        데이터: 서울시 버스 승하차 정보 (2024.11)
+    </p>
     
     <script src="/static/app.js"></script>
 </body>

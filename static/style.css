@@ -153,17 +153,15 @@ canvas {
     margin-top: 30px; 
 }
 
-.grid-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
+canvas { 
+    max-height: 300px; 
+    border-radius: 8px;
 }
 
-.grid-3 {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-}
+/* 그리드 레이아웃 */
+.grid-1 { display: grid; gap: 16px; }
+.grid-2 { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+.grid-3 { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
 
 @media (max-width: 768px) {
     body { padding: 12px; }
@@ -171,9 +169,5 @@ canvas {
     .card { padding: 16px; }
     .recommend { padding: 16px; }
     canvas { max-height: 250px; }
-    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .grid-1, .grid-2, .grid-3 { grid-template-columns: 1fr; }
 }
-/* 그리드 레이아웃 */
-.grid-1 { display: grid; gap: 16px; }
-.grid-2 { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
-.grid-3 { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
