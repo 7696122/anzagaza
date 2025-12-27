@@ -121,22 +121,6 @@ h1 {
     margin-bottom: 12px;
 }
 
-.bus-arrival {
-    margin: 8px 0;
-    padding: 12px;
-    border-radius: 8px;
-    color: white;
-    font-weight: 500;
-}
-
-.recommendation-box {
-    background: var(--light-bg);
-    padding: 12px;
-    border-radius: 8px;
-    font-size: 0.9em;
-    color: var(--text-primary);
-    border-left: 4px solid var(--info-color);
-}
 
 button {
     background: var(--info-color);

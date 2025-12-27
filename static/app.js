@@ -308,19 +308,19 @@ function formatBusInfo(data) {
                 <div class="bus-route">${bus.route}번</div>
                 <div class="bus-direction">→ ${bus.direction}</div>
                 
-                <div class="bus-arrival ${getStatusClass(passengers1)}">
+                <div class="status-box ${getStatusClass(passengers1)}">
                     🚌 ${bus.arrival1}<br>
                     <strong>👥 ${passengers1}명 탑승</strong><br>
                     <small>${bus.bus1_comfort}</small>
                 </div>
                 
-                <div class="bus-arrival ${getStatusClass(passengers2)}">
+                <div class="status-box ${getStatusClass(passengers2)}">
                     🚌 ${bus.arrival2}<br>
                     <strong>👥 ${passengers2}명 탑승</strong><br>
                     <small>${bus.bus2_comfort}</small>
                 </div>
                 
-                <div class="recommendation-box">
+                <div class="status-box status-light">
                     💡 ${detailedRec ? detailedRec.recommendation : bus.recommendation}
                 </div>
             </div>
