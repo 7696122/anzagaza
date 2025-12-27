@@ -87,16 +87,14 @@ def estimate_passenger_count(congestion_level, capacity, route=None):
     elif now.weekday() >= 5:  # 주말
         time_factor = 0.8
     
-    import random
-    
     if congestion_level == 1:  # 여유
-        base_passengers = random.randint(15, 25)
+        base_passengers = 20
     elif congestion_level == 2:  # 보통
-        base_passengers = random.randint(30, 45)
+        base_passengers = 38
     elif congestion_level == 3:  # 혼잡
-        base_passengers = random.randint(45, 62)
+        base_passengers = 54
     else:  # congestion_level == 4, 매우혼잡
-        base_passengers = random.randint(62, 70)
+        base_passengers = 66
     
     # 노선별, 시간대별 조정 적용
     passengers = int(base_passengers * route_factor * time_factor)
