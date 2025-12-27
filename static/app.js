@@ -114,6 +114,50 @@ function formatWeatherInfo(data) {
     `;
 }
 
+// 교통 빅데이터
+async function refreshTraffic() {
+    document.getElementById('trafficInfo').innerHTML = '로딩 중...';
+    try {
+        const response = await fetch('/api/traffic');
+        const data = await response.json();
+        document.getElementById('trafficInfo').innerHTML = formatTrafficInfo(data);
+    } catch (e) {
+        document.getElementById('trafficInfo').innerHTML = '오류: ' + e.message;
+    }
+}
+
+function formatTrafficInfo(data) {
+    if (Object.keys(data).length === 0) return '📍 배차간격 정보 없음';
+    
+    let html = '<div style="display: grid; gap: 12px;">';
+    
+    for (const [route, info] of Object.entries(data)) {
+        if (info.error) continue;
+        
+        const frequency = info.frequency_per_hour;
+        const headway = info.estimated_headway;
+        const nextBus = info.next_bus;
+        
+        // 배차간격에 따른 색상
+        const headwayColor = headway <= 8 ? '#22c55e' : headway <= 12 ? '#eab308' : '#ef4444';
+        
+        html += `
+            <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; background: #f9fafb;">
+                <div style="font-weight: bold; color: #1f2937;">${route}번</div>
+                <div style="font-size: 0.9em; color: #6b7280; margin: 4px 0;">
+                    🚌 다음 버스: ${nextBus}분 후
+                </div>
+                <div style="background: ${headwayColor}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8em; display: inline-block;">
+                    배차간격: ${headway}분 | 시간당 ${frequency}대
+                </div>
+            </div>
+        `;
+    }
+    
+    html += '</div>';
+    return html;
+}
+
 // 실시간 버스 정보
 async function refreshBus() {
     document.getElementById('busInfo').innerHTML = '로딩 중...';
@@ -150,6 +194,7 @@ function formatBusInfo(data) {
 // 페이지 로드시 정보 가져오기
 refreshBus();
 refreshWeather();
+refreshTraffic();
 
 // 현재 요일 표시
 const days = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];

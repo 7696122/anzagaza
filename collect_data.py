@@ -5,6 +5,7 @@ import time
 from datetime import datetime
 from seoul_api import get_bus_arrival_info
 from weather_api import get_weather_data
+from traffic_data import calculate_headway_pattern
 from pathlib import Path
 
 def collect_realtime_data():
@@ -16,6 +17,7 @@ def collect_realtime_data():
     
     data = get_bus_arrival_info("03278")
     weather = get_weather_data()
+    traffic = calculate_headway_pattern()
     
     if "buses" in data:
         result = {
@@ -26,6 +28,7 @@ def collect_realtime_data():
             "weekday_name": weekday_name,
             "is_weekend": weekday >= 5,
             "weather": weather,
+            "traffic": traffic,
             "buses": data["buses"]
         }
         
@@ -37,6 +40,11 @@ def collect_realtime_data():
         if "weather" in result and not result["weather"].get("error"):
             weather_info = result["weather"]
             print(f"  날씨: {weather_info['weather']} {weather_info['temperature']}°C (영향도: {weather_info['impact_factor']}배)")
+        if "traffic" in result:
+            traffic_info = result["traffic"]
+            for route, info in traffic_info.items():
+                if "error" not in info:
+                    print(f"  {route}번 배차: {info['estimated_headway']}분 간격")
         for bus in data["buses"]:
             print(f"  {bus['route']}번: {bus['arrival1']}")
     else:
