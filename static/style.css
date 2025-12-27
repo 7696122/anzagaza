@@ -153,10 +153,6 @@ canvas {
     margin-top: 30px; 
 }
 
-/* 레이아웃 시프팅 방지 */
-.loading-placeholder { min-height: 80px; }
-.loading-placeholder-lg { min-height: 200px; }
-
 /* 그리드 레이아웃 */
 .grid-1 { display: grid; gap: 16px; }
 .grid-2 { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
