@@ -7,3 +7,11 @@ env/
 venv/
 .venv/
 .env
+.env.local
+.DS_Store
+*.log
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+.coverage
