@@ -225,11 +225,14 @@ async function refreshTraffic() {
 }
 
 function formatTrafficInfo(data) {
-    if (Object.keys(data).length === 0) return '<div class="status-box status-light">📍 배차간격 정보 없음</div>';
+    // timestamp 제외한 실제 데이터만 필터링
+    const routes = Object.entries(data).filter(([key]) => key !== 'timestamp' && key !== 'error');
+    
+    if (routes.length === 0) return '<div class="status-box status-light">📍 배차간격 정보 없음</div>';
     
     let html = '<div class="grid-3">';
     
-    for (const [route, info] of Object.entries(data)) {
+    for (const [route, info] of routes) {
         if (info.error) continue;
         
         const frequency = info.frequency_per_hour;
@@ -347,8 +350,11 @@ refreshAll();
 // 60초마다 자동 새로고침
 setInterval(refreshAll, 60000);
 
-// 현재 요일 표시
+// 현재 요일 표시 (요소가 있으면 표시)
 const days = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
 const today = new Date().getDay();
 const isWeekend = today === 0 || today === 6;
-document.getElementById('currentDay').textContent = days[today] + (isWeekend ? ' (주말)' : ' (평일)');
+const currentDayEl = document.getElementById('currentDay');
+if (currentDayEl) {
+    currentDayEl.textContent = days[today] + (isWeekend ? ' (주말)' : ' (평일)');
+}

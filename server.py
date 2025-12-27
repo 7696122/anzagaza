@@ -168,7 +168,7 @@ def api_traffic():
     try:
         headway_data = calculate_headway_pattern()
         return jsonify({
-            "traffic": headway_data,
+            **headway_data,  # 배차간격 데이터 직접 포함
             "timestamp": datetime.now().isoformat()
         })
     except Exception as e:
@@ -182,8 +182,11 @@ def api_weather():
     """날씨 정보"""
     try:
         weather = get_weather_data()
+        if "error" in weather:
+            return jsonify(weather), 500
+        
         return jsonify({
-            "weather": weather,
+            **weather,  # 날씨 데이터 필드들 직접 포함
             "timestamp": datetime.now().isoformat()
         })
     except Exception as e:
