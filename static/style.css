@@ -153,10 +153,9 @@ canvas {
     margin-top: 30px; 
 }
 
-canvas { 
-    max-height: 300px; 
-    border-radius: 8px;
-}
+/* 레이아웃 시프팅 방지 */
+.loading-placeholder { min-height: 80px; }
+.loading-placeholder-lg { min-height: 200px; }
 
 /* 그리드 레이아웃 */
 .grid-1 { display: grid; gap: 16px; }
