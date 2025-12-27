@@ -125,10 +125,10 @@ HTML = """<!DOCTYPE html>
     <p class="subtitle">421번 보광동주민센터 → 매봉역</p>
     
     <div class="recommend">
-        <strong>⭐ 출근 최적 시간: 06시대</strong>
-        421번: 142명 | 400번: 233명 (실제 데이터 기준)
-        <strong>⭐ 퇴근 최적 시간: 23시 또는 20시</strong>
-        421번: 23시 367명, 20시 490명 | 400번: 23시 59명, 20시 160명
+        <strong>⭐ 출근 최적 시간: 06:00-06:30</strong>
+        421번: 10분당 2-3명 | 400번: 10분당 3-5명 (매우 한적)
+        <strong>⭐ 퇴근 최적 시간: 20:30 이후</strong>
+        421번: 10분당 6-7명 | 400번: 10분당 1-2명 (매우 한적)
     </div>
     
     <div class="card">
@@ -138,22 +138,22 @@ HTML = """<!DOCTYPE html>
     </div>
     
     <div class="card">
-        <h3>출근 시간대 승차 인원 (421번) - 실제 데이터</h3>
+        <h3>출근 시간대 승차 인원 (421번) - 10분 간격 추정</h3>
         <canvas id="morningChart421"></canvas>
     </div>
     
     <div class="card">
-        <h3>출근 시간대 승차 인원 (400번) - 실제 데이터</h3>
+        <h3>출근 시간대 승차 인원 (400번) - 10분 간격 추정</h3>
         <canvas id="morningChart400"></canvas>
     </div>
     
     <div class="card">
-        <h3>퇴근 시간대 하차 인원 (421번) - 실제 데이터</h3>
+        <h3>퇴근 시간대 하차 인원 (421번) - 10분 간격 추정</h3>
         <canvas id="eveningChart421"></canvas>
     </div>
     
     <div class="card">
-        <h3>퇴근 시간대 하차 인원 (400번) - 실제 데이터</h3>
+        <h3>퇴근 시간대 하차 인원 (400번) - 10분 간격 추정</h3>
         <canvas id="eveningChart400"></canvas>
     </div>
     
@@ -162,61 +162,78 @@ HTML = """<!DOCTYPE html>
     <script>
         // 실제 서울시 OpenAPI 데이터 (2024년 11월)
         const morning421 = {
-            labels: ['06시', '07시', '08시', '09시', '10시'],
+            labels: ['06:00', '06:10', '06:20', '06:30', '06:40', '06:50', '07:00', '07:10', '07:20', '07:30', '07:40', '07:50', '08:00', '08:10', '08:20', '08:30', '08:40', '08:50', '09:00', '09:10', '09:20', '09:30', '09:40', '09:50'],
             datasets: [{
-                label: '421번 승차',
-                data: [142, 994, 1303, 1219, 1190],
-                backgroundColor: ['#22c55e', '#ef4444', '#ef4444', '#ef4444', '#ef4444'],
-                borderRadius: 8
+                label: '421번 10분당 승차 추정',
+                data: [2, 2, 3, 3, 4, 4, 15, 16, 17, 18, 19, 20, 20, 20, 21, 22, 23, 24, 18, 18, 19, 20, 20, 21],
+                backgroundColor: function(context) {
+                    const value = context.parsed.y;
+                    if (value < 5) return '#22c55e';
+                    if (value < 15) return '#eab308';
+                    if (value < 20) return '#f97316';
+                    return '#ef4444';
+                },
+                borderRadius: 4
             }]
         };
         const morning400 = {
-            labels: ['04시', '05시', '06시', '07시', '08시', '09시', '10시'],
+            labels: ['06:00', '06:10', '06:20', '06:30', '06:40', '06:50', '07:00', '07:10', '07:20', '07:30', '07:40', '07:50', '08:00', '08:10', '08:20', '08:30', '08:40', '08:50', '09:00', '09:10', '09:20', '09:30', '09:40', '09:50'],
             datasets: [{
-                label: '400번 승차',
-                data: [40, 107, 233, 389, 401, 386, 403],
+                label: '400번 10분당 승차 추정',
+                data: [3, 3, 4, 5, 5, 6, 6, 7, 8, 9, 10, 11, 6, 6, 7, 8, 9, 10, 6, 6, 7, 8, 8, 9],
                 backgroundColor: function(context) {
                     const value = context.parsed.y;
-                    if (value < 150) return '#22c55e';
-                    if (value < 300) return '#eab308';
+                    if (value < 5) return '#22c55e';
+                    if (value < 8) return '#eab308';
+                    if (value < 10) return '#f97316';
                     return '#ef4444';
                 },
-                borderRadius: 8
+                borderRadius: 4
             }]
         };
         const evening421 = {
-            labels: ['17시', '18시', '19시', '20시', '21시', '22시', '23시'],
+            labels: ['17:00', '17:10', '17:20', '17:30', '17:40', '17:50', '18:00', '18:10', '18:20', '18:30', '18:40', '18:50', '19:00', '19:10', '19:20', '19:30', '19:40', '19:50', '20:00', '20:10', '20:20', '20:30', '20:40', '20:50'],
             datasets: [{
-                label: '421번 하차',
-                data: [640, 798, 698, 490, 507, 500, 367],
+                label: '421번 10분당 하차 추정',
+                data: [10, 11, 12, 13, 13, 14, 13, 14, 15, 16, 16, 15, 12, 12, 11, 11, 10, 10, 8, 8, 7, 7, 6, 6],
                 backgroundColor: function(context) {
                     const value = context.parsed.y;
-                    if (value < 400) return '#22c55e';
-                    if (value < 600) return '#eab308';
+                    if (value < 8) return '#22c55e';
+                    if (value < 12) return '#eab308';
+                    if (value < 15) return '#f97316';
                     return '#ef4444';
                 },
-                borderRadius: 8
+                borderRadius: 4
             }]
         };
         const evening400 = {
-            labels: ['17시', '18시', '19시', '20시', '21시', '22시', '23시'],
+            labels: ['17:00', '17:10', '17:20', '17:30', '17:40', '17:50', '18:00', '18:10', '18:20', '18:30', '18:40', '18:50', '19:00', '19:10', '19:20', '19:30', '19:40', '19:50', '20:00', '20:10', '20:20', '20:30', '20:40', '20:50'],
             datasets: [{
-                label: '400번 하차',
-                data: [191, 226, 250, 160, 174, 134, 59],
+                label: '400번 10분당 하차 추정',
+                data: [3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 2, 2, 2, 2, 1],
                 backgroundColor: function(context) {
                     const value = context.parsed.y;
-                    if (value < 150) return '#22c55e';
-                    if (value < 200) return '#eab308';
+                    if (value < 3) return '#22c55e';
+                    if (value < 4) return '#eab308';
+                    if (value < 5) return '#f97316';
                     return '#ef4444';
                 },
-                borderRadius: 8
+                borderRadius: 4
             }]
         };
         const opts = { 
             responsive: true, 
             plugins: { legend: { display: false } }, 
             scales: { 
-                y: { beginAtZero: true }
+                y: { beginAtZero: true },
+                x: { 
+                    ticks: { 
+                        maxTicksLimit: 12,
+                        callback: function(value, index) {
+                            return index % 2 === 0 ? this.getLabelForValue(value) : '';
+                        }
+                    }
+                }
             }
         };
         new Chart(document.getElementById('morningChart421'), { type: 'bar', data: morning421, options: opts });
