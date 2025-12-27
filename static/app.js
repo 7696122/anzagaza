@@ -71,20 +71,23 @@ async function refreshQuietTimes() {
 
 function formatMainRecommendation(unified) {
     const main = unified.main_recommendation;
+    const statusClass = main.color === '#22c55e' ? 'status-success' : 
+                       main.color === '#eab308' ? 'status-warning' : 'status-danger';
+    
     let html = `
-        <div style="background: ${main.color}; color: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 16px rgba(0,0,0,0.1);">
+        <div class="status-box ${statusClass}" style="text-align: center; font-size: 1.2em; padding: 20px;">
             <strong style="font-size: 1.4em; display: block; margin-bottom: 8px;">${main.action}</strong>
-            <span style="font-size: 1.1em;">${main.reason}</span>
+            <span>${main.reason}</span>
         </div>
     `;
     
     if (unified.best_bus) {
         const bus = unified.best_bus;
         html += `
-            <div class="info-box">
+            <div class="status-box status-info">
                 <strong>🚌 추천: ${bus.route}번</strong><br>
                 ${bus.arrival} | ${bus.passengers}명 탑승<br>
-                <small style="color: #d1fae5;">${bus.comfort}</small>
+                <small>${bus.comfort}</small>
             </div>
         `;
     }
