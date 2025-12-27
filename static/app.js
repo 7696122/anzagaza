@@ -61,7 +61,7 @@ async function refreshQuietTimes() {
         const response = await fetch('/api/quiet-times');
         const data = await response.json();
         
-        document.getElementById('mainRecommendation').innerHTML = formatMainRecommendation(data.simple_recommendation);
+        document.getElementById('mainRecommendation').innerHTML = formatMainRecommendation(data.unified_recommendation);
         document.getElementById('quietTimesInfo').innerHTML = formatQuietTimesInfo(data.detailed_recommendations);
     } catch (e) {
         document.getElementById('mainRecommendation').innerHTML = '오류: ' + e.message;
@@ -69,23 +69,32 @@ async function refreshQuietTimes() {
     }
 }
 
-function formatMainRecommendation(simple) {
-    return `
-        <div style="background: ${simple.color}; color: white; padding: 16px; border-radius: 12px; text-align: center;">
-            <strong style="font-size: 1.4em;">${simple.action}</strong><br>
-            <span style="font-size: 1.1em;">${simple.reason}</span>
+function formatMainRecommendation(unified) {
+    const main = unified.main_recommendation;
+    let html = `
+        <div style="background: ${main.color}; color: white; padding: 16px; border-radius: 12px; text-align: center;">
+            <strong style="font-size: 1.4em;">${main.action}</strong><br>
+            <span style="font-size: 1.1em;">${main.reason}</span>
         </div>
     `;
+    
+    if (unified.best_bus) {
+        const bus = unified.best_bus;
+        html += `
+            <div style="background: #f0f9ff; padding: 12px; border-radius: 8px; margin-top: 12px;">
+                <strong>🚌 추천: ${bus.route}번</strong><br>
+                ${bus.arrival} | ${bus.passengers}명 탑승<br>
+                <small>${bus.comfort}</small>
+            </div>
+        `;
+    }
+    
+    return html;
 }
 
 function formatQuietTimesInfo(rec) {
     let html = `
         <div style="display: grid; gap: 16px;">
-            <div style="background: ${rec.current_status.color}; color: white; padding: 12px; border-radius: 8px;">
-                <strong>📍 현재: ${rec.current_status.status}</strong><br>
-                ${rec.current_status.reason} (${rec.current_status.passengers})
-            </div>
-            
             <div style="background: #f0f9ff; padding: 12px; border-radius: 8px;">
                 <strong>⏰ 다음 한적한 시간: ${rec.next_quiet_time.time}</strong><br>
                 ${rec.next_quiet_time.reason}`;
@@ -273,16 +282,22 @@ function formatBusInfo(data) {
         `;
     }
     
-    data.buses.forEach(bus => {
+    // 개별 버스 추천 통합
+    const detailedRecs = data.detailed_recommendations?.buses || [];
+    
+    data.buses.forEach((bus, index) => {
         const getOccupancyColor = (passengers) => {
-            if (passengers <= 20) return '#22c55e';
-            if (passengers <= 40) return '#eab308';
-            if (passengers <= 60) return '#f97316';
+            if (passengers <= 25) return '#22c55e';
+            if (passengers <= 35) return '#eab308';
+            if (passengers <= 45) return '#f97316';
             return '#ef4444';
         };
         
         const passengers1 = bus.bus1_passengers;
         const passengers2 = bus.bus2_passengers;
+        
+        // 해당 노선의 상세 추천 찾기
+        const detailedRec = detailedRecs.find(rec => rec.route === bus.route);
         
         html += `
             <div class="bus-item">
@@ -291,18 +306,18 @@ function formatBusInfo(data) {
                 
                 <div style="margin: 8px 0; padding: 8px; background: ${getOccupancyColor(passengers1)}; color: white; border-radius: 6px;">
                     🚌 ${bus.arrival1}<br>
-                    <strong>👥 ${passengers1}명 탑승 (${bus.bus1_occupancy_rate}%)</strong><br>
+                    <strong>👥 ${passengers1}명 탑승</strong><br>
                     <small>${bus.bus1_comfort}</small>
                 </div>
                 
                 <div style="margin: 8px 0; padding: 8px; background: ${getOccupancyColor(passengers2)}; color: white; border-radius: 6px;">
                     🚌 ${bus.arrival2}<br>
-                    <strong>👥 ${passengers2}명 탑승 (${bus.bus2_occupancy_rate}%)</strong><br>
+                    <strong>👥 ${passengers2}명 탑승</strong><br>
                     <small>${bus.bus2_comfort}</small>
                 </div>
                 
                 <div style="background: #f9fafb; padding: 8px; border-radius: 6px; font-size: 0.9em;">
-                    💡 ${bus.recommendation}
+                    💡 ${detailedRec ? detailedRec.recommendation : bus.recommendation}
                 </div>
             </div>
         `;

@@ -13,6 +13,7 @@ from event_calendar import calculate_event_impact
 from road_traffic import get_traffic_info
 from occupancy_analysis import analyze_bus_occupancy, get_comfort_statistics
 from quiet_times import get_quiet_time_recommendations, get_simple_recommendation
+from unified_recommendation import get_unified_recommendation, get_detailed_bus_recommendations
 
 class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
@@ -27,22 +28,24 @@ class Handler(SimpleHTTPRequestHandler):
             else:
                 self.send_error(404)
         elif self.path == '/api/quiet-times':
-            # 한적한 시간대 추천
-            recommendations = get_quiet_time_recommendations()
-            simple = get_simple_recommendation()
+            # 통합 추천 시스템
+            unified = get_unified_recommendation()
+            detailed_recommendations = get_quiet_time_recommendations()
             
             result = {
-                "simple_recommendation": simple,
-                "detailed_recommendations": recommendations
+                "unified_recommendation": unified,
+                "detailed_recommendations": detailed_recommendations
             }
             self.serve_json(result)
         elif self.path == '/api/bus':
-            # 실제 승객 수 포함 버스 정보
+            # 개별 버스별 상세 추천
+            detailed_buses = get_detailed_bus_recommendations()
             occupancy_data = analyze_bus_occupancy()
             comfort_stats = get_comfort_statistics()
             
             result = {
                 "buses": occupancy_data.get("buses", []),
+                "detailed_recommendations": detailed_buses,
                 "comfort_stats": comfort_stats,
                 "error": occupancy_data.get("error")
             }
