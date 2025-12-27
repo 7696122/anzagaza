@@ -225,21 +225,57 @@ async function refreshBus() {
 
 function formatBusInfo(data) {
     if (data.error) return `<div class="bus-item">❌ ${data.error}</div>`;
-    if (!data.buses) return '<div class="bus-item">📍 버스 정보 없음</div>';
+    if (!data.buses || data.buses.length === 0) return '<div class="bus-item">📍 버스 정보 없음</div>';
     
     let html = '<div class="bus-info">';
+    
+    // 전체 편안함 통계
+    if (data.comfort_stats && !data.comfort_stats.error) {
+        const stats = data.comfort_stats.comfort_distribution;
+        html += `
+            <div style="background: #f0f9ff; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+                <strong>📊 현재 시간대 편안함</strong><br>
+                <small>매우편안 ${stats.very_comfortable}% | 편안 ${stats.comfortable}% | 혼잡 ${stats.crowded}% | 매우혼잡 ${stats.very_crowded}%</small><br>
+                ${data.comfort_stats.recommendation}
+            </div>
+        `;
+    }
+    
     data.buses.forEach(bus => {
-        const congestionIcon = ['🟢', '🟡', '🟠', '🔴', '⚫'][bus.congestion1] || '❓';
-        const congestionIcon2 = ['🟢', '🟡', '🟠', '🔴', '⚫'][bus.congestion2] || '❓';
+        const getOccupancyColor = (passengers) => {
+            if (passengers <= 20) return '#22c55e';
+            if (passengers <= 40) return '#eab308';
+            if (passengers <= 60) return '#f97316';
+            return '#ef4444';
+        };
+        
+        const passengers1 = bus.bus1_passengers;
+        const passengers2 = bus.bus2_passengers;
+        
         html += `
             <div class="bus-item">
                 <div class="bus-route">${bus.route}번</div>
                 <div class="bus-direction">→ ${bus.direction}</div>
-                <div class="bus-arrival">🚌 ${bus.arrival1} ${congestionIcon}</div>
-                <div class="bus-arrival">🚌 ${bus.arrival2} ${congestionIcon2}</div>
+                
+                <div style="margin: 8px 0; padding: 8px; background: ${getOccupancyColor(passengers1)}; color: white; border-radius: 6px;">
+                    🚌 ${bus.arrival1}<br>
+                    <strong>👥 ${passengers1}명 탑승 (${bus.bus1_occupancy_rate}%)</strong><br>
+                    <small>${bus.bus1_comfort}</small>
+                </div>
+                
+                <div style="margin: 8px 0; padding: 8px; background: ${getOccupancyColor(passengers2)}; color: white; border-radius: 6px;">
+                    🚌 ${bus.arrival2}<br>
+                    <strong>👥 ${passengers2}명 탑승 (${bus.bus2_occupancy_rate}%)</strong><br>
+                    <small>${bus.bus2_comfort}</small>
+                </div>
+                
+                <div style="background: #f9fafb; padding: 8px; border-radius: 6px; font-size: 0.9em;">
+                    💡 ${bus.recommendation}
+                </div>
             </div>
         `;
     });
+    
     html += '</div>';
     return html;
 }

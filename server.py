@@ -11,6 +11,7 @@ from traffic_data import analyze_bus_distribution, calculate_headway_pattern
 from ml_model import predict_congestion
 from event_calendar import calculate_event_impact
 from road_traffic import get_traffic_info
+from occupancy_analysis import analyze_bus_occupancy, get_comfort_statistics
 
 class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
@@ -25,7 +26,16 @@ class Handler(SimpleHTTPRequestHandler):
             else:
                 self.send_error(404)
         elif self.path == '/api/bus':
-            self.serve_json(get_bus_arrival_info())
+            # 실제 승객 수 포함 버스 정보
+            occupancy_data = analyze_bus_occupancy()
+            comfort_stats = get_comfort_statistics()
+            
+            result = {
+                "buses": occupancy_data.get("buses", []),
+                "comfort_stats": comfort_stats,
+                "error": occupancy_data.get("error")
+            }
+            self.serve_json(result)
         elif self.path == '/api/prediction':
             # ML 예측 모델
             prediction = predict_congestion()

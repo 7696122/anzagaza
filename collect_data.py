@@ -9,6 +9,7 @@ from traffic_data import calculate_headway_pattern
 from ml_model import predict_congestion
 from event_calendar import calculate_event_impact
 from road_traffic import get_traffic_info
+from occupancy_analysis import analyze_bus_occupancy
 from pathlib import Path
 
 def collect_realtime_data():
@@ -24,6 +25,7 @@ def collect_realtime_data():
     prediction = predict_congestion()
     events = calculate_event_impact()
     road_traffic = get_traffic_info()
+    occupancy = analyze_bus_occupancy()
     
     if "buses" in data:
         result = {
@@ -38,6 +40,7 @@ def collect_realtime_data():
             "prediction": prediction,
             "events": events,
             "road_traffic": road_traffic,
+            "occupancy": occupancy,
             "buses": data["buses"]
         }
         
@@ -52,6 +55,11 @@ def collect_realtime_data():
         if "prediction" in result:
             pred_info = result["prediction"]
             print(f"  AI 예측: {pred_info['predicted_congestion']}배 (신뢰도: {pred_info['confidence']*100:.0f}%)")
+        if "occupancy" in result and "buses" in result["occupancy"]:
+            occ_info = result["occupancy"]["buses"]
+            for bus_info in occ_info:
+                passengers = bus_info["bus1_passengers"]
+                print(f"  {bus_info['route']}번: {passengers}명 탑승 - {bus_info['bus1_comfort']}")
         if "events" in result and result["events"]["events"]:
             event_info = result["events"]
             print(f"  이벤트: {event_info['recommendation']}")
