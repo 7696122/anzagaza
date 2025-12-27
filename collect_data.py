@@ -10,6 +10,8 @@ def collect_realtime_data():
     """실시간 버스 데이터 수집"""
     now = datetime.now()
     timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
+    weekday = now.weekday()  # 0=월요일, 6=일요일
+    weekday_name = ['월', '화', '수', '목', '금', '토', '일'][weekday]
     
     data = get_bus_arrival_info("03278")
     
@@ -18,6 +20,9 @@ def collect_realtime_data():
             "timestamp": timestamp,
             "hour": now.hour,
             "minute": now.minute,
+            "weekday": weekday,
+            "weekday_name": weekday_name,
+            "is_weekend": weekday >= 5,
             "buses": data["buses"]
         }
         
@@ -25,38 +30,69 @@ def collect_realtime_data():
         with open(data_file, "a", encoding="utf-8") as f:
             f.write(json.dumps(result, ensure_ascii=False) + "\n")
         
-        print(f"[{timestamp}] 수집 완료")
+        print(f"[{timestamp} {weekday_name}] 수집 완료")
         for bus in data["buses"]:
             print(f"  {bus['route']}번: {bus['arrival1']}")
     else:
-        print(f"[{timestamp}] 실패: {data}")
+        print(f"[{timestamp} {weekday_name}] 실패: {data}")
 
-def analyze_collected_data():
-    """수집된 데이터로 10분 간격 패턴 분석"""
+def analyze_weekday_patterns():
+    """요일별 패턴 분석"""
     data_file = Path("realtime_data.jsonl")
     if not data_file.exists():
         print("수집된 데이터가 없습니다")
         return {}
     
-    # 10분 간격별 버스 빈도 분석
-    patterns = {}  # {time_slot: {route: frequency}}
+    # 요일별 시간대별 패턴
+    weekday_patterns = {}  # {weekday: {hour: {route: count}}}
     
     with open(data_file, encoding="utf-8") as f:
         for line in f:
             data = json.loads(line)
+            weekday = data.get("weekday", 0)
+            weekday_name = data.get("weekday_name", "?")
             hour = data["hour"]
-            minute = data["minute"] // 10 * 10  # 10분 단위
-            slot = f"{hour:02d}:{minute:02d}"
             
-            if slot not in patterns:
-                patterns[slot] = {"421": 0, "400": 0, "405": 0}
+            if weekday not in weekday_patterns:
+                weekday_patterns[weekday] = {}
+            if hour not in weekday_patterns[weekday]:
+                weekday_patterns[weekday][hour] = {"421": 0, "400": 0, "405": 0}
             
             for bus in data["buses"]:
                 route = bus["route"]
-                if route in patterns[slot]:
-                    patterns[slot][route] += 1
+                if route in weekday_patterns[weekday][hour]:
+                    weekday_patterns[weekday][hour][route] += 1
     
-    return patterns
+    return weekday_patterns
+
+def compare_weekday_weekend():
+    """평일 vs 주말 패턴 비교"""
+    patterns = analyze_weekday_patterns()
+    if not patterns:
+        return
+    
+    weekday_data = {}  # 평일 (월-금)
+    weekend_data = {}  # 주말 (토-일)
+    
+    for weekday, hours in patterns.items():
+        target = weekday_data if weekday < 5 else weekend_data
+        
+        for hour, routes in hours.items():
+            if hour not in target:
+                target[hour] = {"421": 0, "400": 0, "405": 0}
+            for route, count in routes.items():
+                target[hour][route] += count
+    
+    print("=== 평일 vs 주말 패턴 비교 ===")
+    print("\n평일 (월-금):")
+    for hour in sorted(weekday_data.keys()):
+        print(f"{hour:02d}시: 421번 {weekday_data[hour]['421']}회, 400번 {weekday_data[hour]['400']}회")
+    
+    print("\n주말 (토-일):")
+    for hour in sorted(weekend_data.keys()):
+        print(f"{hour:02d}시: 421번 {weekend_data[hour]['421']}회, 400번 {weekend_data[hour]['400']}회")
+    
+    return weekday_data, weekend_data
 
 def generate_10min_chart_data():
     """10분 간격 차트 데이터 생성"""
@@ -89,10 +125,18 @@ if __name__ == "__main__":
             print("10분 대기 중...")
             time.sleep(600)  # 10분
     elif len(sys.argv) > 1 and sys.argv[1] == "analyze":
-        generate_10min_chart_data()
+        compare_weekday_weekend()
+    elif len(sys.argv) > 1 and sys.argv[1] == "weekday":
+        patterns = analyze_weekday_patterns()
+        weekday_names = ['월', '화', '수', '목', '금', '토', '일']
+        for weekday, hours in patterns.items():
+            print(f"\n=== {weekday_names[weekday]}요일 ===")
+            for hour in sorted(hours.keys()):
+                print(f"{hour:02d}시: {hours[hour]}")
     else:
         print("1회 테스트:")
         collect_realtime_data()
         print("\n사용법:")
         print("  python3 collect_data.py start    # 지속 수집")
-        print("  python3 collect_data.py analyze  # 데이터 분석")
+        print("  python3 collect_data.py analyze  # 평일/주말 비교")
+        print("  python3 collect_data.py weekday  # 요일별 상세")

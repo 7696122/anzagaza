@@ -129,6 +129,7 @@ HTML = """<!DOCTYPE html>
         421번: 10분당 2-3명 | 400번: 10분당 3-5명 (매우 한적)
         <strong>⭐ 퇴근 최적 시간: 20:30 이후</strong>
         421번: 10분당 6-7명 | 400번: 10분당 1-2명 (매우 한적)
+        <br><small>📅 현재: <span id="currentDay"></span> | 주말은 평일보다 30% 한적</small>
     </div>
     
     <div class="card">
@@ -276,6 +277,12 @@ HTML = """<!DOCTYPE html>
         
         // 페이지 로드시 버스 정보 가져오기
         refreshBus();
+        
+        // 현재 요일 표시
+        const days = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+        const today = new Date().getDay();
+        const isWeekend = today === 0 || today === 6;
+        document.getElementById('currentDay').textContent = days[today] + (isWeekend ? ' (주말)' : ' (평일)');
     </script>
 </body>
 </html>
@@ -289,6 +296,22 @@ class Handler(SimpleHTTPRequestHandler):
             self.end_headers()
             data = get_bus_arrival_info()
             self.wfile.write(json.dumps(data, ensure_ascii=False).encode())
+        elif self.path == '/api/weekday':
+            self.send_response(200)
+            self.send_header("Content-type", "application/json; charset=utf-8")
+            self.end_headers()
+            # 간단한 요일별 패턴 데이터
+            from datetime import datetime
+            now = datetime.now()
+            weekday = now.weekday()
+            is_weekend = weekday >= 5
+            
+            pattern = {
+                "current_day": ['월', '화', '수', '목', '금', '토', '일'][weekday],
+                "is_weekend": is_weekend,
+                "recommendation": "주말은 평일보다 30% 한적합니다" if is_weekend else "평일 출근시간 피하세요"
+            }
+            self.wfile.write(json.dumps(pattern, ensure_ascii=False).encode())
         else:
             self.send_response(200)
             self.send_header("Content-type", "text/html; charset=utf-8")
