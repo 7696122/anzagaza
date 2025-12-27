@@ -12,11 +12,12 @@
     <p class="subtitle">421번 보광동주민센터 → 매봉역</p>
     
     <div class="recommend">
-        <strong>⭐ 출근 최적 시간: 06:00-06:30</strong>
-        421번: 10분당 2-3명 | 400번: 10분당 3-5명 (매우 한적)
-        <strong>⭐ 퇴근 최적 시간: 20:30 이후</strong>
-        421번: 10분당 6-7명 | 400번: 10분당 1-2명 (매우 한적)
-        <br><small>📅 현재: <span id="currentDay"></span> | 주말은 평일보다 30% 한적</small>
+        <div id="mainRecommendation">로딩 중...</div>
+    </div>
+    
+    <div class="card">
+        <h3>⏰ 한적한 시간대 가이드</h3>
+        <div id="quietTimesInfo">로딩 중...</div>
     </div>
     
     <div class="card">
@@ -41,23 +42,9 @@
     </div>
     
     <div class="card">
-        <h3>출근 시간대 승차 인원 (421번) - 10분 간격 추정</h3>
-        <canvas id="morningChart421"></canvas>
-    </div>
-    
-    <div class="card">
-        <h3>출근 시간대 승차 인원 (400번) - 10분 간격 추정</h3>
-        <canvas id="morningChart400"></canvas>
-    </div>
-    
-    <div class="card">
-        <h3>퇴근 시간대 하차 인원 (421번) - 10분 간격 추정</h3>
-        <canvas id="eveningChart421"></canvas>
-    </div>
-    
-    <div class="card">
-        <h3>퇴근 시간대 하차 인원 (400번) - 10분 간격 추정</h3>
-        <canvas id="eveningChart400"></canvas>
+        <h3>📊 시간대별 혼잡도 패턴</h3>
+        <canvas id="hourlyPattern"></canvas>
+        <small>녹색: 한적(20명↓) | 노랑: 보통(40명↓) | 주황: 혼잡(60명↓) | 빨강: 매우혼잡</small>
     </div>
     
     <p class="footer">데이터: 서울시 버스 승하차 정보 (2024.11)</p>

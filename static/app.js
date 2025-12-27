@@ -1,88 +1,120 @@
-// 실제 서울시 OpenAPI 데이터 (2024년 11월)
-const morning421 = {
-    labels: ['06:00', '06:10', '06:20', '06:30', '06:40', '06:50', '07:00', '07:10', '07:20', '07:30', '07:40', '07:50', '08:00', '08:10', '08:20', '08:30', '08:40', '08:50', '09:00', '09:10', '09:20', '09:30', '09:40', '09:50'],
+// 하루 전체 혼잡도 패턴 차트
+const hourlyPattern = {
+    labels: ['06시', '07시', '08시', '09시', '10시', '11시', '12시', '13시', '14시', '15시', '16시', '17시', '18시', '19시', '20시', '21시', '22시', '23시'],
     datasets: [{
-        label: '421번 10분당 승차 추정',
-        data: [2, 2, 3, 3, 4, 4, 15, 16, 17, 18, 19, 20, 20, 20, 21, 22, 23, 24, 18, 18, 19, 20, 20, 21],
+        label: '평일 평균 승객 수',
+        data: [20, 55, 65, 50, 35, 35, 40, 40, 35, 35, 40, 50, 55, 45, 35, 30, 25, 20],
         backgroundColor: function(context) {
             const value = context.parsed.y;
-            if (value < 5) return '#22c55e';
-            if (value < 15) return '#eab308';
-            if (value < 20) return '#f97316';
-            return '#ef4444';
+            if (value <= 25) return '#22c55e';  // 한적
+            if (value <= 40) return '#eab308';  // 보통
+            if (value <= 55) return '#f97316';  // 혼잡
+            return '#ef4444';                   // 매우혼잡
         },
-        borderRadius: 4
-    }]
-};
-
-const morning400 = {
-    labels: ['06:00', '06:10', '06:20', '06:30', '06:40', '06:50', '07:00', '07:10', '07:20', '07:30', '07:40', '07:50', '08:00', '08:10', '08:20', '08:30', '08:40', '08:50', '09:00', '09:10', '09:20', '09:30', '09:40', '09:50'],
-    datasets: [{
-        label: '400번 10분당 승차 추정',
-        data: [3, 3, 4, 5, 5, 6, 6, 7, 8, 9, 10, 11, 6, 6, 7, 8, 9, 10, 6, 6, 7, 8, 8, 9],
-        backgroundColor: function(context) {
-            const value = context.parsed.y;
-            if (value < 5) return '#22c55e';
-            if (value < 8) return '#eab308';
-            if (value < 10) return '#f97316';
-            return '#ef4444';
-        },
-        borderRadius: 4
-    }]
-};
-
-const evening421 = {
-    labels: ['17:00', '17:10', '17:20', '17:30', '17:40', '17:50', '18:00', '18:10', '18:20', '18:30', '18:40', '18:50', '19:00', '19:10', '19:20', '19:30', '19:40', '19:50', '20:00', '20:10', '20:20', '20:30', '20:40', '20:50'],
-    datasets: [{
-        label: '421번 10분당 하차 추정',
-        data: [10, 11, 12, 13, 13, 14, 13, 14, 15, 16, 16, 15, 12, 12, 11, 11, 10, 10, 8, 8, 7, 7, 6, 6],
-        backgroundColor: function(context) {
-            const value = context.parsed.y;
-            if (value < 8) return '#22c55e';
-            if (value < 12) return '#eab308';
-            if (value < 15) return '#f97316';
-            return '#ef4444';
-        },
-        borderRadius: 4
-    }]
-};
-
-const evening400 = {
-    labels: ['17:00', '17:10', '17:20', '17:30', '17:40', '17:50', '18:00', '18:10', '18:20', '18:30', '18:40', '18:50', '19:00', '19:10', '19:20', '19:30', '19:40', '19:50', '20:00', '20:10', '20:20', '20:30', '20:40', '20:50'],
-    datasets: [{
-        label: '400번 10분당 하차 추정',
-        data: [3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 2, 2, 2, 2, 1],
-        backgroundColor: function(context) {
-            const value = context.parsed.y;
-            if (value < 3) return '#22c55e';
-            if (value < 4) return '#eab308';
-            if (value < 5) return '#f97316';
-            return '#ef4444';
-        },
-        borderRadius: 4
+        borderRadius: 6
     }]
 };
 
 const opts = { 
     responsive: true, 
-    plugins: { legend: { display: false } }, 
-    scales: { 
-        y: { beginAtZero: true },
-        x: { 
-            ticks: { 
-                maxTicksLimit: 12,
-                callback: function(value, index) {
-                    return index % 2 === 0 ? this.getLabelForValue(value) : '';
+    plugins: { 
+        legend: { display: false },
+        tooltip: {
+            callbacks: {
+                label: function(context) {
+                    const value = context.parsed.y;
+                    let status = '';
+                    if (value <= 25) status = '한적';
+                    else if (value <= 40) status = '보통';
+                    else if (value <= 55) status = '혼잡';
+                    else status = '매우혼잡';
+                    return `${context.label}: ${value}명 (${status})`;
                 }
+            }
+        }
+    }, 
+    scales: { 
+        y: { 
+            beginAtZero: true,
+            title: {
+                display: true,
+                text: '평균 승객 수'
+            }
+        },
+        x: {
+            title: {
+                display: true,
+                text: '시간대'
             }
         }
     }
 };
 
-new Chart(document.getElementById('morningChart421'), { type: 'bar', data: morning421, options: opts });
-new Chart(document.getElementById('morningChart400'), { type: 'bar', data: morning400, options: opts });
-new Chart(document.getElementById('eveningChart421'), { type: 'bar', data: evening421, options: opts });
-new Chart(document.getElementById('eveningChart400'), { type: 'bar', data: evening400, options: opts });
+new Chart(document.getElementById('hourlyPattern'), { type: 'bar', data: hourlyPattern, options: opts });
+
+// 한적한 시간대 추천
+async function refreshQuietTimes() {
+    document.getElementById('mainRecommendation').innerHTML = '로딩 중...';
+    document.getElementById('quietTimesInfo').innerHTML = '로딩 중...';
+    
+    try {
+        const response = await fetch('/api/quiet-times');
+        const data = await response.json();
+        
+        document.getElementById('mainRecommendation').innerHTML = formatMainRecommendation(data.simple_recommendation);
+        document.getElementById('quietTimesInfo').innerHTML = formatQuietTimesInfo(data.detailed_recommendations);
+    } catch (e) {
+        document.getElementById('mainRecommendation').innerHTML = '오류: ' + e.message;
+        document.getElementById('quietTimesInfo').innerHTML = '오류: ' + e.message;
+    }
+}
+
+function formatMainRecommendation(simple) {
+    return `
+        <div style="background: ${simple.color}; color: white; padding: 16px; border-radius: 12px; text-align: center;">
+            <strong style="font-size: 1.4em;">${simple.action}</strong><br>
+            <span style="font-size: 1.1em;">${simple.reason}</span>
+        </div>
+    `;
+}
+
+function formatQuietTimesInfo(rec) {
+    let html = `
+        <div style="display: grid; gap: 16px;">
+            <div style="background: ${rec.current_status.color}; color: white; padding: 12px; border-radius: 8px;">
+                <strong>📍 현재: ${rec.current_status.status}</strong><br>
+                ${rec.current_status.reason} (${rec.current_status.passengers})
+            </div>
+            
+            <div style="background: #f0f9ff; padding: 12px; border-radius: 8px;">
+                <strong>⏰ 다음 한적한 시간: ${rec.next_quiet_time.time}</strong><br>
+                ${rec.next_quiet_time.reason}`;
+    
+    if (rec.next_quiet_time.wait_minutes > 0) {
+        html += `<br><small>대기시간: ${rec.next_quiet_time.wait_minutes}분</small>`;
+    }
+    html += '</div>';
+    
+    html += '<div><strong>✅ 오늘의 최적 시간:</strong><br>';
+    rec.best_times_today.forEach(time => {
+        const color = time.status === '매우한적' ? '#22c55e' : time.status === '한적' ? '#eab308' : '#f97316';
+        html += `<div style="margin: 4px 0; padding: 8px; background: ${color}; color: white; border-radius: 6px; font-size: 0.9em;">
+            ${time.time}: ${time.status} (${time.passengers})
+        </div>`;
+    });
+    html += '</div>';
+    
+    html += '<div><strong>❌ 피해야 할 시간:</strong><br>';
+    rec.avoid_times.forEach(avoid => {
+        html += `<div style="margin: 4px 0; padding: 8px; background: #ef4444; color: white; border-radius: 6px; font-size: 0.9em;">
+            ${avoid.time}: ${avoid.reason} (${avoid.passengers})
+        </div>`;
+    });
+    html += '</div>';
+    
+    html += '</div>';
+    return html;
+}
 
 // AI 예측 분석
 async function refreshPrediction() {
@@ -281,6 +313,7 @@ function formatBusInfo(data) {
 }
 
 // 페이지 로드시 정보 가져오기
+refreshQuietTimes();
 refreshBus();
 refreshPrediction();
 refreshWeather();
