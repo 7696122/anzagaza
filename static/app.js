@@ -72,8 +72,8 @@ async function refreshQuietTimes() {
 function formatMainRecommendation(unified) {
     const main = unified.main_recommendation;
     let html = `
-        <div style="background: ${main.color}; color: white; padding: 16px; border-radius: 12px; text-align: center;">
-            <strong style="font-size: 1.4em;">${main.action}</strong><br>
+        <div style="background: ${main.color}; color: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 16px rgba(0,0,0,0.1);">
+            <strong style="font-size: 1.4em; display: block; margin-bottom: 8px;">${main.action}</strong>
             <span style="font-size: 1.1em;">${main.reason}</span>
         </div>
     `;
@@ -81,7 +81,7 @@ function formatMainRecommendation(unified) {
     if (unified.best_bus) {
         const bus = unified.best_bus;
         html += `
-            <div style="background: #1f2937; color: white; padding: 12px; border-radius: 8px; margin-top: 12px; border: 2px solid #22c55e;">
+            <div class="info-box">
                 <strong>🚌 추천: ${bus.route}번</strong><br>
                 ${bus.arrival} | ${bus.passengers}명 탑승<br>
                 <small style="color: #d1fae5;">${bus.comfort}</small>
@@ -94,8 +94,8 @@ function formatMainRecommendation(unified) {
 
 function formatQuietTimesInfo(rec) {
     let html = `
-        <div style="display: grid; gap: 16px;">
-            <div style="background: #f0f9ff; padding: 12px; border-radius: 8px;">
+        <div class="grid-1">
+            <div class="status-box status-info">
                 <strong>⏰ 다음 한적한 시간: ${rec.next_quiet_time.time}</strong><br>
                 ${rec.next_quiet_time.reason}`;
     
@@ -106,8 +106,9 @@ function formatQuietTimesInfo(rec) {
     
     html += '<div><strong>✅ 오늘의 최적 시간:</strong><br>';
     rec.best_times_today.forEach(time => {
-        const color = time.status === '매우한적' ? '#22c55e' : time.status === '한적' ? '#eab308' : '#f97316';
-        html += `<div style="margin: 4px 0; padding: 8px; background: ${color}; color: white; border-radius: 6px; font-size: 0.9em;">
+        const statusClass = time.status === '매우한적' ? 'status-success' : 
+                           time.status === '한적' ? 'status-warning' : 'status-danger';
+        html += `<div class="status-box ${statusClass}" style="margin: 4px 0; font-size: 0.9em;">
             ${time.time}: ${time.status} (${time.passengers})
         </div>`;
     });
@@ -115,7 +116,7 @@ function formatQuietTimesInfo(rec) {
     
     html += '<div><strong>❌ 피해야 할 시간:</strong><br>';
     rec.avoid_times.forEach(avoid => {
-        html += `<div style="margin: 4px 0; padding: 8px; background: #ef4444; color: white; border-radius: 6px; font-size: 0.9em;">
+        html += `<div class="status-box status-danger" style="margin: 4px 0; font-size: 0.9em;">
             ${avoid.time}: ${avoid.reason} (${avoid.passengers})
         </div>`;
     });
@@ -191,19 +192,19 @@ async function refreshWeather() {
 }
 
 function formatWeatherInfo(data) {
-    if (data.error) return `❌ ${data.error}`;
+    if (data.error) return `<div class="status-box status-danger">❌ ${data.error}</div>`;
     
     const tempIcon = data.temperature < 0 ? '🥶' : data.temperature > 25 ? '🔥' : '🌡️';
     const weatherIcon = data.is_raining ? '🌧️' : data.is_snowing ? '❄️' : '☀️';
     
     return `
-        <div style="display: grid; gap: 8px;">
-            <div><strong>${weatherIcon} ${data.weather}</strong></div>
-            <div>${tempIcon} 기온: ${data.temperature}°C | 💧 습도: ${data.humidity}%</div>
-            <div style="background: ${data.impact_factor > 1.2 ? '#fef3c7' : '#dcfce7'}; padding: 12px; border-radius: 8px; margin-top: 8px;">
-                <strong>📊 혼잡도 예상: ${data.impact_factor}배</strong><br>
-                ${data.recommendation}
-            </div>
+        <div class="status-box status-light">
+            <strong>${weatherIcon} ${data.weather}</strong><br>
+            ${tempIcon} 기온: ${data.temperature}°C | 💧 습도: ${data.humidity}%
+        </div>
+        <div class="status-box ${data.impact_factor > 1.2 ? 'status-warning' : 'status-success'}">
+            <strong>📊 혼잡도 예상: ${data.impact_factor}배</strong><br>
+            ${data.recommendation}
         </div>
     `;
 }
@@ -221,9 +222,9 @@ async function refreshTraffic() {
 }
 
 function formatTrafficInfo(data) {
-    if (Object.keys(data).length === 0) return '📍 배차간격 정보 없음';
+    if (Object.keys(data).length === 0) return '<div class="status-box status-light">📍 배차간격 정보 없음</div>';
     
-    let html = '<div style="display: grid; gap: 12px;">';
+    let html = '<div class="grid-3">';
     
     for (const [route, info] of Object.entries(data)) {
         if (info.error) continue;
@@ -232,17 +233,17 @@ function formatTrafficInfo(data) {
         const headway = info.estimated_headway;
         const nextBus = info.next_bus;
         
-        // 배차간격에 따른 색상
-        const headwayColor = headway <= 8 ? '#22c55e' : headway <= 12 ? '#eab308' : '#ef4444';
+        // 배차간격에 따른 상태 클래스
+        const statusClass = headway <= 8 ? 'status-success' : headway <= 12 ? 'status-warning' : 'status-danger';
         
         html += `
-            <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; background: #f9fafb;">
-                <div style="font-weight: bold; color: #1f2937;">${route}번</div>
-                <div style="font-size: 0.9em; color: #6b7280; margin: 4px 0;">
-                    🚌 다음 버스: ${nextBus}분 후
+            <div class="status-box ${statusClass}">
+                <div style="font-weight: bold;">${route}번</div>
+                <div style="font-size: 0.9em; margin: 4px 0;">
+                    🚌 다음: ${nextBus}분 후
                 </div>
-                <div style="background: ${headwayColor}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8em; display: inline-block;">
-                    배차간격: ${headway}분 | 시간당 ${frequency}대
+                <div style="font-size: 0.8em;">
+                    배차: ${headway}분 | 시간당 ${frequency}대
                 </div>
             </div>
         `;
@@ -265,8 +266,8 @@ async function refreshBus() {
 }
 
 function formatBusInfo(data) {
-    if (data.error) return `<div class="bus-item">❌ ${data.error}</div>`;
-    if (!data.buses || data.buses.length === 0) return '<div class="bus-item">📍 버스 정보 없음</div>';
+    if (data.error) return `<div class="bus-item"><div class="status-box status-danger">❌ ${data.error}</div></div>`;
+    if (!data.buses || data.buses.length === 0) return '<div class="bus-item"><div class="status-box status-light">📍 버스 정보 없음</div></div>';
     
     let html = '<div class="bus-info">';
     
@@ -274,7 +275,7 @@ function formatBusInfo(data) {
     if (data.comfort_stats && !data.comfort_stats.error) {
         const stats = data.comfort_stats.comfort_distribution;
         html += `
-            <div style="background: #f0f9ff; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+            <div class="status-box status-info">
                 <strong>📊 현재 시간대 편안함</strong><br>
                 <small>매우편안 ${stats.very_comfortable}% | 편안 ${stats.comfortable}% | 혼잡 ${stats.crowded}% | 매우혼잡 ${stats.very_crowded}%</small><br>
                 ${data.comfort_stats.recommendation}
@@ -286,11 +287,11 @@ function formatBusInfo(data) {
     const detailedRecs = data.detailed_recommendations?.buses || [];
     
     data.buses.forEach((bus, index) => {
-        const getOccupancyColor = (passengers) => {
-            if (passengers <= 25) return '#22c55e';
-            if (passengers <= 35) return '#eab308';
-            if (passengers <= 45) return '#f97316';
-            return '#ef4444';
+        const getStatusClass = (passengers) => {
+            if (passengers <= 25) return 'status-success';
+            if (passengers <= 35) return 'status-warning';
+            if (passengers <= 45) return 'status-danger';
+            return 'status-danger';
         };
         
         const passengers1 = bus.bus1_passengers;
@@ -304,19 +305,19 @@ function formatBusInfo(data) {
                 <div class="bus-route">${bus.route}번</div>
                 <div class="bus-direction">→ ${bus.direction}</div>
                 
-                <div style="margin: 8px 0; padding: 8px; background: ${getOccupancyColor(passengers1)}; color: white; border-radius: 6px;">
+                <div class="bus-arrival ${getStatusClass(passengers1)}">
                     🚌 ${bus.arrival1}<br>
                     <strong>👥 ${passengers1}명 탑승</strong><br>
                     <small>${bus.bus1_comfort}</small>
                 </div>
                 
-                <div style="margin: 8px 0; padding: 8px; background: ${getOccupancyColor(passengers2)}; color: white; border-radius: 6px;">
+                <div class="bus-arrival ${getStatusClass(passengers2)}">
                     🚌 ${bus.arrival2}<br>
                     <strong>👥 ${passengers2}명 탑승</strong><br>
                     <small>${bus.bus2_comfort}</small>
                 </div>
                 
-                <div style="background: #f9fafb; padding: 8px; border-radius: 6px; font-size: 0.9em;">
+                <div class="recommendation-box">
                     💡 ${detailedRec ? detailedRec.recommendation : bus.recommendation}
                 </div>
             </div>
