@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>앉아가자 - 버스 한적한 시간대</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>🚌 앉아가자</h1>
+    <p class="subtitle">421번 보광동주민센터 → 매봉역</p>
+    
+    <div class="recommend">
+        <strong>⭐ 출근 최적 시간: 06:00-06:30</strong>
+        421번: 10분당 2-3명 | 400번: 10분당 3-5명 (매우 한적)
+        <strong>⭐ 퇴근 최적 시간: 20:30 이후</strong>
+        421번: 10분당 6-7명 | 400번: 10분당 1-2명 (매우 한적)
+        <br><small>📅 현재: <span id="currentDay"></span> | 주말은 평일보다 30% 한적</small>
+    </div>
+    
+    <div class="card">
+        <h3>🚌 실시간 버스 정보</h3>
+        <div id="busInfo">로딩 중...</div>
+        <button onclick="refreshBus()">새로고침</button>
+    </div>
+    
+    <div class="card">
+        <h3>출근 시간대 승차 인원 (421번) - 10분 간격 추정</h3>
+        <canvas id="morningChart421"></canvas>
+    </div>
+    
+    <div class="card">
+        <h3>출근 시간대 승차 인원 (400번) - 10분 간격 추정</h3>
+        <canvas id="morningChart400"></canvas>
+    </div>
+    
+    <div class="card">
+        <h3>퇴근 시간대 하차 인원 (421번) - 10분 간격 추정</h3>
+        <canvas id="eveningChart421"></canvas>
+    </div>
+    
+    <div class="card">
+        <h3>퇴근 시간대 하차 인원 (400번) - 10분 간격 추정</h3>
+        <canvas id="eveningChart400"></canvas>
+    </div>
+    
+    <p class="footer">데이터: 서울시 버스 승하차 정보 (2024.11)</p>
+    
+    <script src="/static/app.js"></script>
+</body>
+</html>
