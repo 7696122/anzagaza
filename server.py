@@ -54,6 +54,7 @@ def cache_for(seconds=300):
                 logger.error(f"캐시 함수 실행 실패 {func.__name__}: {e}")
                 return {"error": str(e)}
         
+        wrapper.__name__ = func.__name__  # Flask 엔드포인트 이름 설정 중요!
         return wrapper
     return decorator
 
