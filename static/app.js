@@ -84,6 +84,45 @@ new Chart(document.getElementById('morningChart400'), { type: 'bar', data: morni
 new Chart(document.getElementById('eveningChart421'), { type: 'bar', data: evening421, options: opts });
 new Chart(document.getElementById('eveningChart400'), { type: 'bar', data: evening400, options: opts });
 
+// AI 예측 분석
+async function refreshPrediction() {
+    document.getElementById('predictionInfo').innerHTML = '로딩 중...';
+    try {
+        const response = await fetch('/api/prediction');
+        const data = await response.json();
+        document.getElementById('predictionInfo').innerHTML = formatPredictionInfo(data);
+    } catch (e) {
+        document.getElementById('predictionInfo').innerHTML = '오류: ' + e.message;
+    }
+}
+
+function formatPredictionInfo(data) {
+    const confidence = Math.round(data.confidence * 100);
+    const congestionColor = data.predicted_congestion < 0.7 ? '#22c55e' : 
+                           data.predicted_congestion < 1.2 ? '#eab308' : '#ef4444';
+    
+    let html = `
+        <div style="display: grid; gap: 12px;">
+            <div style="background: ${congestionColor}; color: white; padding: 12px; border-radius: 8px;">
+                <strong>🎯 AI 예측 혼잡도: ${data.predicted_congestion}배</strong><br>
+                <small>신뢰도: ${confidence}% | 기본 예측: ${data.base_prediction}배</small>
+            </div>
+            <div>${data.recommendation}</div>
+    `;
+    
+    if (data.events && data.events.length > 0) {
+        html += `<div style="background: #fef3c7; padding: 8px; border-radius: 6px;">
+            <strong>📅 특별 이벤트:</strong><br>`;
+        data.events.forEach(event => {
+            html += `${event.name} (${event.type}) `;
+        });
+        html += `<br>${data.event_recommendation}</div>`;
+    }
+    
+    html += '</div>';
+    return html;
+}
+
 // 날씨 정보
 async function refreshWeather() {
     document.getElementById('weatherInfo').innerHTML = '로딩 중...';
@@ -193,6 +232,7 @@ function formatBusInfo(data) {
 
 // 페이지 로드시 정보 가져오기
 refreshBus();
+refreshPrediction();
 refreshWeather();
 refreshTraffic();
 

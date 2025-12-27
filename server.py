@@ -8,6 +8,8 @@ from datetime import datetime
 from seoul_api import get_bus_arrival_info
 from weather_api import get_weather_data
 from traffic_data import analyze_bus_distribution, calculate_headway_pattern
+from ml_model import predict_congestion
+from event_calendar import calculate_event_impact
 
 class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
@@ -23,6 +25,24 @@ class Handler(SimpleHTTPRequestHandler):
                 self.send_error(404)
         elif self.path == '/api/bus':
             self.serve_json(get_bus_arrival_info())
+        elif self.path == '/api/prediction':
+            # ML 예측 모델
+            prediction = predict_congestion()
+            events = calculate_event_impact()
+            
+            # 이벤트 영향 반영
+            final_prediction = prediction['predicted_congestion'] * events['impact_factor']
+            
+            result = {
+                "predicted_congestion": round(final_prediction, 2),
+                "base_prediction": prediction['predicted_congestion'],
+                "event_impact": events['impact_factor'],
+                "confidence": prediction['confidence'],
+                "recommendation": prediction['recommendation'],
+                "events": events['events'],
+                "event_recommendation": events['recommendation']
+            }
+            self.serve_json(result)
         elif self.path == '/api/traffic':
             # 교통 빅데이터 (배차간격 분석)
             headway_data = calculate_headway_pattern()

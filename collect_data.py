@@ -6,6 +6,8 @@ from datetime import datetime
 from seoul_api import get_bus_arrival_info
 from weather_api import get_weather_data
 from traffic_data import calculate_headway_pattern
+from ml_model import predict_congestion
+from event_calendar import calculate_event_impact
 from pathlib import Path
 
 def collect_realtime_data():
@@ -18,6 +20,8 @@ def collect_realtime_data():
     data = get_bus_arrival_info("03278")
     weather = get_weather_data()
     traffic = calculate_headway_pattern()
+    prediction = predict_congestion()
+    events = calculate_event_impact()
     
     if "buses" in data:
         result = {
@@ -29,6 +33,8 @@ def collect_realtime_data():
             "is_weekend": weekday >= 5,
             "weather": weather,
             "traffic": traffic,
+            "prediction": prediction,
+            "events": events,
             "buses": data["buses"]
         }
         
@@ -40,6 +46,12 @@ def collect_realtime_data():
         if "weather" in result and not result["weather"].get("error"):
             weather_info = result["weather"]
             print(f"  날씨: {weather_info['weather']} {weather_info['temperature']}°C (영향도: {weather_info['impact_factor']}배)")
+        if "prediction" in result:
+            pred_info = result["prediction"]
+            print(f"  AI 예측: {pred_info['predicted_congestion']}배 (신뢰도: {pred_info['confidence']*100:.0f}%)")
+        if "events" in result and result["events"]["events"]:
+            event_info = result["events"]
+            print(f"  이벤트: {event_info['recommendation']}")
         if "traffic" in result:
             traffic_info = result["traffic"]
             for route, info in traffic_info.items():
