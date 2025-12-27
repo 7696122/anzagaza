@@ -104,8 +104,8 @@ function formatPredictionInfo(data) {
     let html = `
         <div style="display: grid; gap: 12px;">
             <div style="background: ${congestionColor}; color: white; padding: 12px; border-radius: 8px;">
-                <strong>🎯 AI 예측 혼잡도: ${data.predicted_congestion}배</strong><br>
-                <small>신뢰도: ${confidence}% | 기본 예측: ${data.base_prediction}배</small>
+                <strong>🎯 종합 예측 혼잡도: ${data.predicted_congestion}배</strong><br>
+                <small>신뢰도: ${confidence}% | 기본: ${data.base_prediction}배 | 이벤트: ${data.event_impact}배 | 교통: ${data.traffic_impact}배</small>
             </div>
             <div>${data.recommendation}</div>
     `;
@@ -117,6 +117,20 @@ function formatPredictionInfo(data) {
             html += `${event.name} (${event.type}) `;
         });
         html += `<br>${data.event_recommendation}</div>`;
+    }
+    
+    if (data.traffic_recommendation) {
+        html += `<div style="background: #f0f9ff; padding: 8px; border-radius: 6px;">
+            <strong>🚗 도로 상황:</strong><br>
+            ${data.traffic_recommendation}`;
+        
+        if (data.congested_roads && data.congested_roads.length > 0) {
+            html += `<br><small>혼잡: ${data.congested_roads.join(', ')}</small>`;
+        }
+        if (data.smooth_roads && data.smooth_roads.length > 0) {
+            html += `<br><small>원활: ${data.smooth_roads.join(', ')}</small>`;
+        }
+        html += '</div>';
     }
     
     html += '</div>';

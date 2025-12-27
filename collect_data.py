@@ -8,6 +8,7 @@ from weather_api import get_weather_data
 from traffic_data import calculate_headway_pattern
 from ml_model import predict_congestion
 from event_calendar import calculate_event_impact
+from road_traffic import get_traffic_info
 from pathlib import Path
 
 def collect_realtime_data():
@@ -22,6 +23,7 @@ def collect_realtime_data():
     traffic = calculate_headway_pattern()
     prediction = predict_congestion()
     events = calculate_event_impact()
+    road_traffic = get_traffic_info()
     
     if "buses" in data:
         result = {
@@ -35,6 +37,7 @@ def collect_realtime_data():
             "traffic": traffic,
             "prediction": prediction,
             "events": events,
+            "road_traffic": road_traffic,
             "buses": data["buses"]
         }
         
@@ -52,6 +55,9 @@ def collect_realtime_data():
         if "events" in result and result["events"]["events"]:
             event_info = result["events"]
             print(f"  이벤트: {event_info['recommendation']}")
+        if "road_traffic" in result:
+            road_info = result["road_traffic"]
+            print(f"  도로: {road_info['total_impact']}배 ({len(road_info['congested_roads'])}개 혼잡)")
         if "traffic" in result:
             traffic_info = result["traffic"]
             for route, info in traffic_info.items():

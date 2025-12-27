@@ -10,6 +10,7 @@ from weather_api import get_weather_data
 from traffic_data import analyze_bus_distribution, calculate_headway_pattern
 from ml_model import predict_congestion
 from event_calendar import calculate_event_impact
+from road_traffic import get_traffic_info
 
 class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
@@ -29,18 +30,25 @@ class Handler(SimpleHTTPRequestHandler):
             # ML 예측 모델
             prediction = predict_congestion()
             events = calculate_event_impact()
+            road_traffic = get_traffic_info()
             
-            # 이벤트 영향 반영
-            final_prediction = prediction['predicted_congestion'] * events['impact_factor']
+            # 모든 영향 반영
+            final_prediction = (prediction['predicted_congestion'] * 
+                              events['impact_factor'] * 
+                              road_traffic['total_impact'])
             
             result = {
                 "predicted_congestion": round(final_prediction, 2),
                 "base_prediction": prediction['predicted_congestion'],
                 "event_impact": events['impact_factor'],
+                "traffic_impact": road_traffic['total_impact'],
                 "confidence": prediction['confidence'],
                 "recommendation": prediction['recommendation'],
                 "events": events['events'],
-                "event_recommendation": events['recommendation']
+                "event_recommendation": events['recommendation'],
+                "traffic_recommendation": road_traffic['recommendation'],
+                "congested_roads": road_traffic['congested_roads'],
+                "smooth_roads": road_traffic['smooth_roads']
             }
             self.serve_json(result)
         elif self.path == '/api/traffic':
